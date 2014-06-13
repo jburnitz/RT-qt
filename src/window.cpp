@@ -16,7 +16,7 @@ Window::Window(){
     layout->addWidget(centralWidget, BorderLayout::Center);
     header = createLabel("Ticket Number # ");
     layout->addWidget(header, BorderLayout::North);
-   // layout->addWidget(createLabel("East 1"), BorderLayout::East);
+ // layout->addWidget(createLabel("East 1"), BorderLayout::East);
 
     status = createLabel(helpdesk);
     layout->addWidget( status, BorderLayout::South);
