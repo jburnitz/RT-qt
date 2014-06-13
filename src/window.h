@@ -47,6 +47,7 @@ QT_BEGIN_NAMESPACE
 class QLabel;
 class QTextBrowser;
 class network;
+class QNetworkReply;
 QT_END_NAMESPACE
 
 class Window : public QWidget
@@ -63,7 +64,8 @@ private:
     QTextBrowser *centralWidget;
     network *connection;
 
-private slots:
+public slots:
+    void ProcessData(QNetworkReply *reply);
 
 };
 

@@ -24,19 +24,17 @@ Window::Window(){
     setLayout(layout);
     setWindowTitle(tr("RT"));
 
-
     QUrl url( helpdesk );
 
-    connection = new network();
+    connection = new network(this);
     connection->SetUrl(url);
     connection->Get();
-
-    qDebug() << connection->GetData();
-    centralWidget->setText( QString(connection->GetData()) );
-
-
 }
 
+void Window::ProcessData(QNetworkReply *reply){
+    qDebug() << "Window::ProcessData";
+    qDebug() << reply->url().host();
+}
 QLabel *Window::createLabel(const QString &text){
     QLabel *label = new QLabel(text);
     label->setFrameStyle(QFrame::Box | QFrame::Raised);

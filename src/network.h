@@ -15,7 +15,7 @@ class network : public QObject
     Q_OBJECT
 
 public:
-    network();
+    network(QObject *parent);
     ~network();
 
     void SetUrl(QUrl url);
@@ -24,11 +24,15 @@ public:
     void Post(QUrl params);
 
 private:
+    QObject *parent;
     QNetworkAccessManager *manager;
     QNetworkRequest request;
     QNetworkReply *theReply;
     QUrl redirectUrl(const QUrl& possibleRedirectUrl, const QUrl& oldRedirectUrl) const;
-    bool finished;
+    QUrl _urlRedirectedTo;
+
+signals:
+    void data(QNetworkReply *theData);
 
 private slots:
     void replyFinished(QNetworkReply *reply);
