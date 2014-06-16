@@ -38,40 +38,16 @@
 **
 ****************************************************************************/
 
-#ifndef HTTPWINDOW_H
-#define HTTPWINDOW_H
+#include <QApplication>
+#include "httpwindow.h"
 
-#include <QDialog>
-#include <QNetworkAccessManager>
-#include <QUrl>
-
-QT_BEGIN_NAMESPACE
-class QFile;
-class QNetworkReply;
-QT_END_NAMESPACE
-
-class HttpWindow : public QDialog
+int main(int argc, char *argv[])
 {
-    Q_OBJECT
+    QApplication app(argc, argv);
 
-public:
-    HttpWindow(QWidget *parent = 0);
 
-    void startRequest(QUrl url);
+    HttpWindow httpWin;
 
-private slots:
-    void downloadFile(QUrl theUrl);
-    void httpFinished();
-    void httpReadyRead();
-    void updateDataReadProgress(qint64 bytesRead, qint64 totalBytes);
-
-private:
-    QUrl url;
-    QNetworkAccessManager qnam;
-    QNetworkReply *reply;
-    QFile *file;
-    int httpGetId;
-    bool httpRequestAborted;
-};
-
-#endif
+    //httpWin.show();
+    return app.exec();
+}
