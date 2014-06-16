@@ -1,9 +1,9 @@
 QT += network widgets
 
-HEADERS     = mainwindow.h \
+HEADERS     = borderlayout.h \
               window.h \
     network.h
-SOURCES     = mainwindow.cpp \
+SOURCES     = borderlayout.cpp \
               main.cpp \
               window.cpp \
     network.cpp
