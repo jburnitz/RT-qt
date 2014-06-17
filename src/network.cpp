@@ -14,16 +14,17 @@ network::~network(){
     delete conn;
 }
 void network::ProcessData(QByteArray data){
-    //qDebug()<< "Network::ProcessData";
+    qDebug()<< "Network::ProcessData";
 
     QString doc(data);
     qDebug() << doc;
     if(doc.contains("UserID")){
+        //do login stuff
         qDebug() << "Found Login Page";
         QUrlQuery postData;
         postData.addQueryItem("UserID", "jburni2");
         //postData.addQueryItem("param2", "string");
+        conn->Clear();
         conn->Post(QUrl("https://ness.uic.edu/bluestem/login.cgi"),postData);
     }
-
 }

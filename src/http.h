@@ -59,6 +59,7 @@ public:
     void Get(QUrl theUrl);
     void Post(QUrl theUrl, QUrlQuery params);
     void Post(QUrlQuery params);
+    void Clear();
     QByteArray data;
 
 signals:
@@ -75,6 +76,7 @@ private:
     QUrlQuery params;
     QNetworkAccessManager qnam;
     QNetworkReply *reply;
+    QNetworkReply *replyPost;
     int httpGetId;
     bool httpGetRequest;
 
