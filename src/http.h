@@ -38,32 +38,37 @@
 **
 ****************************************************************************/
 
-#ifndef HTTPWINDOW_H
-#define HTTPWINDOW_H
+#ifndef Http_H
+#define Http_H
 
-#include <QDialog>
+//#include <QDialog>
 #include <QNetworkAccessManager>
 #include <QUrl>
+#include <QByteArray>
 
 QT_BEGIN_NAMESPACE
 class QFile;
 class QNetworkReply;
 QT_END_NAMESPACE
 
-class HttpWindow : public QDialog
+class Http : public QObject
 {
     Q_OBJECT
 
 public:
-    HttpWindow(QWidget *parent = 0);
+    Http(QObject *parent = 0);
+    void downloadFile(QUrl theUrl);
+    void Post(QUrl theUrl, QByteArray params);
+    QByteArray data;
 
-    void startRequest(QUrl url);
+signals:
+    void httpDone(QByteArray);
 
 private slots:
-    void downloadFile(QUrl theUrl);
+    void startRequestGet(QUrl url);
+    void startRequestPost(QByteArray params );
     void httpFinished();
     void httpReadyRead();
-    void updateDataReadProgress(qint64 bytesRead, qint64 totalBytes);
 
 private:
     QUrl url;
@@ -72,6 +77,7 @@ private:
     QFile *file;
     int httpGetId;
     bool httpRequestAborted;
+
 };
 
 #endif

@@ -38,38 +38,51 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
+//#include <QtWidgets>
 #include <QtNetwork>
+#include "http.h"
 
-#include "httpwindow.h"
-
-HttpWindow::HttpWindow(QWidget *parent)
-    : QDialog(parent)
+Http::Http(QObject *parent)
+    : QObject(parent)
 {
-    downloadFile(QUrl("https://www.google.com"));
+    //default constructor
 }
 
-void HttpWindow::startRequest(QUrl url)
+void Http::startRequestGet(QUrl url)
 {
     reply = qnam.get(QNetworkRequest(url));
-    connect(reply, SIGNAL(finished()),
-            this, SLOT(httpFinished()));
-    connect(reply, SIGNAL(readyRead()),
-            this, SLOT(httpReadyRead()));
-    connect(reply, SIGNAL(downloadProgress(qint64,qint64)),
-            this, SLOT(updateDataReadProgress(qint64,qint64)));
+
+    connect(reply, SIGNAL(finished()), this, SLOT(httpFinished()));
+    connect(reply, SIGNAL(readyRead()), this, SLOT(httpReadyRead()));
+    //could be useful someday
+    //connect(reply, SIGNAL(downloadProgress(qint64,qint64)), this, SLOT(updateDataReadProgress(qint64,qint64)));
 }
 
-void HttpWindow::downloadFile(QUrl theUrl)
+void Http::startRequestPost(QByteArray params){
+    reply = qnam.post(QNetworkRequest(url), params);
+}
+
+void Http::Post(QUrl theUrl, QByteArray params){
+    this->url = url;
+
+    QFileInfo fileInfo(url.path());
+    QString fileName = fileInfo.fileName();
+    if (fileName.isEmpty())
+        fileName = "index.post.html";
+
+    file = new QFile(fileName);
+
+    startRequestPost(params);
+}
+
+void Http::downloadFile(QUrl theUrl)
 {
-    this->url = theUrl;
+    url = theUrl;
 
     QFileInfo fileInfo(url.path());
     QString fileName = fileInfo.fileName();
     if (fileName.isEmpty())
         fileName = "index.html";
-
-
 
     file = new QFile(fileName);
     if (!file->open(QIODevice::WriteOnly)) {
@@ -80,20 +93,20 @@ void HttpWindow::downloadFile(QUrl theUrl)
 
     // schedule the request
     httpRequestAborted = false;
-    startRequest(url);
+    //Get the data
+    startRequestGet(url);
 }
-void HttpWindow::httpFinished()
+void Http::httpFinished()
 {
+    qDebug()<< "Http::httpFinished";
     file->flush();
     file->close();
-
+    emit(httpDone(data));
+    //qDebug() << data;
 
     QVariant redirectionTarget = reply->attribute(QNetworkRequest::RedirectionTargetAttribute);
     if (reply->error()) {
-        file->remove();
-        QMessageBox::information(this, tr("HTTP"),
-                                 tr("Download failed: %1.")
-                                 .arg(reply->errorString()));
+        qWarning() << "HTTP Download failed: " << reply->errorString();
 
     } else if (!redirectionTarget.isNull()) {
         QUrl newUrl = url.resolved(redirectionTarget.toUrl());
@@ -103,8 +116,6 @@ void HttpWindow::httpFinished()
         file->resize(0);
         startRequest(url);
         return;
-    } else {
-        QString fileName = url.fileName();
     }
 
     reply->deleteLater();
@@ -113,18 +124,15 @@ void HttpWindow::httpFinished()
     file = 0;
 }
 
-void HttpWindow::httpReadyRead()
+void Http::httpReadyRead()
 {
     // this slot gets called every time the QNetworkReply has new data.
     // We read all of its new data and write it into the file.
     // That way we use less RAM than when reading it at the finished()
     // signal of the QNetworkReply
-    if (file)
-        file->write(reply->readAll());
-}
-
-void HttpWindow::updateDataReadProgress(qint64 bytesRead, qint64 totalBytes)
-{
-    if (httpRequestAborted)
-        return;
+    if (file){
+        //file->write(reply->readAll());
+        data.append(reply->readAll());
+        qDebug() << data.size();
+    }
 }

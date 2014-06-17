@@ -16,7 +16,6 @@ Window::Window(){
     layout->addWidget(centralWidget, BorderLayout::Center);
     header = createLabel("Ticket Number # ");
     layout->addWidget(header, BorderLayout::North);
- // layout->addWidget(createLabel("East 1"), BorderLayout::East);
 
     status = createLabel(helpdesk);
     layout->addWidget( status, BorderLayout::South);
@@ -24,17 +23,10 @@ Window::Window(){
     setLayout(layout);
     setWindowTitle(tr("RT"));
 
-    QUrl url( helpdesk );
-
+    //QUrl url( helpdesk );
     connection = new network(this);
-    connection->SetUrl(url);
-    connection->Get();
 }
 
-void Window::ProcessData(QNetworkReply *reply){
-    qDebug() << "Window::ProcessData";
-    qDebug() << reply->url().host();
-}
 QLabel *Window::createLabel(const QString &text){
     QLabel *label = new QLabel(text);
     label->setFrameStyle(QFrame::Box | QFrame::Raised);

@@ -2,40 +2,24 @@
 #define NETWORK_H
 
 #include <QObject>
-#include <QNetworkRequest>
+#include <QByteArray>
 
-class QNetworkReply;
-class QNetworkAccessManager;
-class QUrl;
-class QByteArray;
-class QNetworkCookieJar;
+class Http;
+class QDomDocument;
 
 class network : public QObject
 {
     Q_OBJECT
 
 public:
-    network(QObject *parent);
+    network(QObject *parent=0);
     ~network();
 
-    void SetUrl(QUrl url);
-    QByteArray GetData();
-    void Get();
-    void Post(QUrl params);
+public slots:
+    void ProcessData(QByteArray data);
 
 private:
-    QObject *parent;
-    QNetworkAccessManager *manager;
-    QNetworkRequest request;
-    QNetworkReply *theReply;
-    QUrl redirectUrl(const QUrl& possibleRedirectUrl, const QUrl& oldRedirectUrl) const;
-    QUrl _urlRedirectedTo;
-
-signals:
-    void data(QNetworkReply *theData);
-
-private slots:
-    void replyFinished(QNetworkReply *reply);
+    Http *conn;
 };
 
 #endif // NETWORK_H
