@@ -46,63 +46,57 @@ Http::Http(QObject *parent)
     : QObject(parent)
 {
     //default constructor
+    this->httpGetRequest = true;
 }
 
-void Http::startRequestGet(QUrl url)
+void Http::startRequest()
 {
-    reply = qnam.get(QNetworkRequest(url));
-
-    connect(reply, SIGNAL(finished()), this, SLOT(httpFinished()));
-    connect(reply, SIGNAL(readyRead()), this, SLOT(httpReadyRead()));
+    if(httpGetRequest){
+        reply = qnam.get(QNetworkRequest(url));
+        connect(reply, SIGNAL(error(QNetworkReply::NetworkError)), this, SLOT(netError()));
+        connect(reply, SIGNAL(finished()), this, SLOT(httpFinished()));
+        connect(reply, SIGNAL(readyRead()), this, SLOT(httpReadyRead()));
+    }
+    else{
+        qDebug()<<"Posting with url=" << url.toString() << " param=" << params.query();
+        QNetworkRequest request(url);
+        request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
+        reply = qnam.post( request, params.toString(QUrl::FullyEncoded).toUtf8());
+        connect(reply, SIGNAL(error(QNetworkReply::NetworkError)), this, SLOT(netError()));
+        connect(reply, SIGNAL(finished()), this, SLOT(httpFinished()));
+        connect(reply, SIGNAL(readyRead()), this, SLOT(httpReadyRead()));
+    }
     //could be useful someday
     //connect(reply, SIGNAL(downloadProgress(qint64,qint64)), this, SLOT(updateDataReadProgress(qint64,qint64)));
 }
+void Http::netError(){
 
-void Http::startRequestPost(QByteArray params){
-    reply = qnam.post(QNetworkRequest(url), params);
+    qDebug()<<"error!";
 }
 
-void Http::Post(QUrl theUrl, QByteArray params){
-    this->url = url;
+void Http::Post(QUrl theUrl, QUrlQuery params){
+    this->url = theUrl;
+    this->params = params;
+    this->httpGetRequest = false;
 
-    QFileInfo fileInfo(url.path());
-    QString fileName = fileInfo.fileName();
-    if (fileName.isEmpty())
-        fileName = "index.post.html";
-
-    file = new QFile(fileName);
-
-    startRequestPost(params);
+    startRequest();
+}
+void Http::Post(QUrlQuery params){
+    this->Post(this->url, params);
 }
 
-void Http::downloadFile(QUrl theUrl)
+void Http::Get(QUrl theUrl)
 {
+    httpGetRequest = true;
     url = theUrl;
 
-    QFileInfo fileInfo(url.path());
-    QString fileName = fileInfo.fileName();
-    if (fileName.isEmpty())
-        fileName = "index.html";
-
-    file = new QFile(fileName);
-    if (!file->open(QIODevice::WriteOnly)) {
-        delete file;
-        file = 0;
-        return;
-    }
-
-    // schedule the request
-    httpRequestAborted = false;
-    //Get the data
-    startRequestGet(url);
+    startRequest();
 }
 void Http::httpFinished()
 {
     qDebug()<< "Http::httpFinished";
-    file->flush();
-    file->close();
+
     emit(httpDone(data));
-    //qDebug() << data;
 
     QVariant redirectionTarget = reply->attribute(QNetworkRequest::RedirectionTargetAttribute);
     if (reply->error()) {
@@ -112,27 +106,24 @@ void Http::httpFinished()
         QUrl newUrl = url.resolved(redirectionTarget.toUrl());
         url = newUrl;
         reply->deleteLater();
-        file->open(QIODevice::WriteOnly);
-        file->resize(0);
-        startRequest(url);
+        startRequest();
         return;
     }
 
     reply->deleteLater();
     reply = 0;
-    delete file;
-    file = 0;
 }
 
 void Http::httpReadyRead()
 {
+    qDebug()<<"Http::httpReadRead()";
     // this slot gets called every time the QNetworkReply has new data.
     // We read all of its new data and write it into the file.
     // That way we use less RAM than when reading it at the finished()
     // signal of the QNetworkReply
-    if (file){
-        //file->write(reply->readAll());
-        data.append(reply->readAll());
+    data.append(reply->readAll());
+    if(!httpGetRequest){
+        qDebug()<< "POST READY READ";
         qDebug() << data.size();
     }
 }

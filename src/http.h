@@ -41,13 +41,12 @@
 #ifndef Http_H
 #define Http_H
 
-//#include <QDialog>
 #include <QNetworkAccessManager>
 #include <QUrl>
+#include <QUrlQuery>
 #include <QByteArray>
 
 QT_BEGIN_NAMESPACE
-class QFile;
 class QNetworkReply;
 QT_END_NAMESPACE
 
@@ -57,26 +56,27 @@ class Http : public QObject
 
 public:
     Http(QObject *parent = 0);
-    void downloadFile(QUrl theUrl);
-    void Post(QUrl theUrl, QByteArray params);
+    void Get(QUrl theUrl);
+    void Post(QUrl theUrl, QUrlQuery params);
+    void Post(QUrlQuery params);
     QByteArray data;
 
 signals:
     void httpDone(QByteArray);
 
 private slots:
-    void startRequestGet(QUrl url);
-    void startRequestPost(QByteArray params );
+    void startRequest();
     void httpFinished();
     void httpReadyRead();
+    void netError();
 
 private:
     QUrl url;
+    QUrlQuery params;
     QNetworkAccessManager qnam;
     QNetworkReply *reply;
-    QFile *file;
     int httpGetId;
-    bool httpRequestAborted;
+    bool httpGetRequest;
 
 };
 
