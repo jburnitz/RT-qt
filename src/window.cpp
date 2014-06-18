@@ -1,6 +1,7 @@
 #include "borderlayout.h"
 #include "window.h"
 #include "network.h"
+#include "logindialog.h"
 
 #include <QTextBrowser>
 #include <QLabel>
@@ -9,6 +10,7 @@
 Window::Window(){
     QString helpdesk("https://helpdesk.uic.edu/las/");
 
+    //setting up the main window
     centralWidget = new QTextBrowser;
     centralWidget->setPlainText(tr("Central widget"));
 
@@ -23,8 +25,32 @@ Window::Window(){
     setLayout(layout);
     setWindowTitle(tr("RT"));
 
-    //QUrl url( helpdesk );
+    //set up login dialog
+    loginDialog = new LoginDialog( this );
+    QString user1("jburni2");
+    loginDialog->setUsername( user1 );
+    connect( loginDialog,SIGNAL(acceptLogin(QString&,QString&,int&)), this, SLOT(slotAcceptUserLogin(QString&,QString&)));
+
     connection = new network(this);
+    connect(connection, SIGNAL(CredentialsRequested()), this, SLOT(GetCredentials()));
+    connect(connection, SIGNAL(LoggedIn()), this, SLOT(HandleData()));
+
+    connection->Begin();
+
+}
+
+void Window::GetCredentials(){
+    qDebug()<<"Window::GetCredentials()";
+    loginDialog->exec();
+}
+
+void Window::slotAcceptUserLogin(QString &user, QString &pass){
+    connection->SetCredentials(user, pass);
+}
+
+void Window::HandleData(){
+    qDebug()<<"Window::HandleData";
+    centralWidget->setHtml(connection->doc);
 }
 
 QLabel *Window::createLabel(const QString &text){

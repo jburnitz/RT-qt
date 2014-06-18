@@ -47,6 +47,7 @@ QT_BEGIN_NAMESPACE
 class QLabel;
 class QTextBrowser;
 class network;
+class LoginDialog;
 QT_END_NAMESPACE
 
 class Window : public QWidget
@@ -61,8 +62,14 @@ private:
     QLabel *status;
     QLabel *header;
     QTextBrowser *centralWidget;
+    LoginDialog* loginDialog;
 
     network *connection;
+
+public slots:
+    void GetCredentials();
+    void slotAcceptUserLogin(QString& user,QString& pass);
+    void HandleData();
 
 };
 
