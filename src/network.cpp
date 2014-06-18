@@ -24,14 +24,12 @@ void network::Fetch(QString url){
     conn->Clear();
     conn->Get(QUrl(url));
 }
-
 void network::SetCredentials(QString id, QString password){
     this->id = id;
     this->password = password;
 
     Login();
 }
-
 void network::Login(){
     qDebug()<<"network::Login";
 
@@ -58,7 +56,6 @@ void network::Login(){
     conn->Clear();
     conn->Post(QUrl("https://ness.uic.edu/bluestem/login.cgi"),postData);
 }
-
 void network::ProcessData(QByteArray data){
     qDebug()<< "Network::ProcessData";
 
@@ -81,17 +78,8 @@ void network::ProcessData(QByteArray data){
     }
 
 }
-
 void network::ProcessREST(QByteArray data){
-    qDebug()<< "network::ProcessREST()" << this->doc;
-    QDomDocument document;
-    QXmlInputSource is;
-    is.setData(this->doc);
-    document.setContent(is.data());
-
-    QDomNodeList nodes = document.elementsByTagName("Subject");
-    if( nodes.size() > 0)
-        qDebug() << nodes.at(0).toElement().text();
+    qDebug()<< "network::ProcessREST()" << data;
 
 }
 
