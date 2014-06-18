@@ -1,5 +1,6 @@
 QT += network \
      widgets \
+    xml
 
 HEADERS     = borderlayout.h \
               window.h \

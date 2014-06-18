@@ -50,7 +50,8 @@ void Window::slotAcceptUserLogin(QString &user, QString &pass){
 
 void Window::HandleData(){
     qDebug()<<"Window::HandleData";
-    centralWidget->setHtml(connection->doc);
+    //centralWidget->setHtml(connection->doc);
+    connection->Fetch("https://helpdesk.uic.edu/las/REST/1.0/ticket/6054/show");
 }
 
 QLabel *Window::createLabel(const QString &text){

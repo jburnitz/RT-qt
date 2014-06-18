@@ -15,10 +15,12 @@ public:
     ~network();
     void SetCredentials(QString id, QString password);
     void Begin();
+    void Fetch(QString url);
     QString doc;
 
 public slots:
     void ProcessData(QByteArray data);
+    void ProcessREST(QByteArray data);
 
 private:
     Http *conn;

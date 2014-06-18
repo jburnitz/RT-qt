@@ -3,6 +3,8 @@
 
 #include <QUrlQuery>
 
+#include <QDomDocument>
+#include <QXmlInputSource>
 
 network::network(QObject *parent)
 {
@@ -18,6 +20,10 @@ network::~network(){
 void network::Begin(){
     conn->Get(QUrl("https://helpdesk.uic.edu/las"));
 }
+void network::Fetch(QString url){
+    conn->Clear();
+    conn->Get(QUrl(url));
+}
 
 void network::SetCredentials(QString id, QString password){
     this->id = id;
@@ -30,8 +36,9 @@ void network::Login(){
     qDebug()<<"network::Login";
 
     QString doc(conn->data);
-    QUrlQuery postData;
 
+    //building the login url
+    QUrlQuery postData;
     postData.addQueryItem("UserID", id);
     postData.addQueryItem("RPCVersion",getValue("RPCVersion", doc));
     postData.addQueryItem("RPCURL",getValue("RPCURL", doc));
@@ -48,7 +55,6 @@ void network::Login(){
     if( doc.contains("passwordInput")){
         postData.addQueryItem("password", password);
     }
-
     conn->Clear();
     conn->Post(QUrl("https://ness.uic.edu/bluestem/login.cgi"),postData);
 }
@@ -69,8 +75,23 @@ void network::ProcessData(QByteArray data){
     }else{
         //qDebug() << doc;
         qDebug()<<"emit(LoggedIn())";
+        disconnect(conn, SIGNAL(httpDone(QByteArray)), this, SLOT(ProcessData(QByteArray)));
+        connect(conn, SIGNAL(httpDone(QByteArray)), this, SLOT(ProcessREST(QByteArray)));
         emit(LoggedIn());
     }
+
+}
+
+void network::ProcessREST(QByteArray data){
+    qDebug()<< "network::ProcessREST()" << this->doc;
+    QDomDocument document;
+    QXmlInputSource is;
+    is.setData(this->doc);
+    document.setContent(is.data());
+
+    QDomNodeList nodes = document.elementsByTagName("Subject");
+    if( nodes.size() > 0)
+        qDebug() << nodes.at(0).toElement().text();
 
 }
 
