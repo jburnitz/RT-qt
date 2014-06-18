@@ -20,6 +20,11 @@ public slots:
 
 private:
     Http *conn;
+    QString getValue(QString valueName, QString &source);
+
+signals:
+
+
 };
 
 #endif // NETWORK_H
