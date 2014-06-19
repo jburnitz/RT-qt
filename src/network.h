@@ -3,6 +3,8 @@
 
 #include <QObject>
 #include <QByteArray>
+#include <QMap>
+#include <QUrl>
 
 class Http;
 class ticket;
@@ -17,12 +19,16 @@ public:
     void SetCredentials(QString id, QString password);
     void Begin();
     void Fetch(QString url);
+    void Fetch(QUrl url);
     void Load();
     QString doc;
+    QUrl baseUrl;
 
 public slots:
     void ProcessData(QByteArray data);
     void ProcessREST(QByteArray data);
+    void FindQueues(QByteArray data);
+    void ShowQueues();
 
 protected:
     Http *conn;
@@ -31,13 +37,14 @@ protected:
     QString getDataBetween(QString begin,QString end, QString &source);
     void Login();
 
-    ticket* GetQueues();
-    //GetTickets(QString queue)
-    ticket* queues;
+    QMap<QString, QString> queues;
+    int qId;
 
 signals:
     void CredentialsRequested();
     void LoggedIn();
+    void Error(const QString err, const QString details);
+    void Done();
 
 };
 

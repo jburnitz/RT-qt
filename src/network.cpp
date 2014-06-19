@@ -3,10 +3,13 @@
 #include "ticket.h"
 
 #include <QUrlQuery>
+#include <QNetworkReply>
 
 network::network(QObject *parent)
 {
     this->setParent(parent);
+    qId=10;
+    baseUrl.setUrl("https://helpdesk.uic.edu/");
 
     conn = new Http();
     connect(conn,SIGNAL(httpDone(QByteArray)), this, SLOT(ProcessData(QByteArray)));
@@ -22,6 +25,12 @@ void network::Fetch(QString url){
     conn->Clear();
     conn->Get(QUrl(url));
 }
+void network::Fetch(QUrl url){
+    qDebug()<<"network::Fetch("<<url.toString()<<");";
+    conn->Clear();
+    conn->Get(url);
+}
+
 void network::SetCredentials(QString id, QString password){
     this->id = id;
     this->password = password;
@@ -82,11 +91,49 @@ void network::ProcessREST(QByteArray data){
 }
 
 void network::Load(){
-    queues = GetQueues();
+    qDebug()<<"network::Load()";
+    disconnect(this,SLOT(ProcessREST(QByteArray)));
+    connect(conn, SIGNAL(httpDone(QByteArray)), this, SLOT(FindQueues(QByteArray)));
+    FindQueues(NULL);
 }
 
-ticket* network::GetQueues(){
+void network::FindQueues(QByteArray data){
+    qDebug()<<"network::FindQueues(QByteArray data)";
+    QString reply(data);
 
+    //make sure we have data
+    if(reply.size()>0){
+        qDebug()<<"network::FindQueues() has data";
+        QStringList lines = reply.split(QRegExp("\n\|\r\n\|\r"),QString::SkipEmptyParts);
+        if(lines.at(0).contains("200 Ok")){
+            qDebug() << "network::FindQueues()" << lines.at(0);
+            if(lines.at(1).contains("does not exist")){
+                emit(Done());
+                return;
+            }
+
+            QString str;
+            int loc;
+            for(int i=1; i<lines.size(); i++){
+                str = lines.at(i);
+                loc = str.indexOf(':');
+                if( (str.left(loc)=="Name") && (str.mid(loc+1).trimmed().size()>0) ){
+                    queues[QString::number(qId)] = str.mid(loc+1).trimmed();
+                    break;
+                }
+            }
+
+            //increment if we can see the queue or not.
+            qId++;
+        }else{
+            qWarning() << "REST error:" << reply;
+            emit(Error("Error Finding Queues",conn->reply->errorString()));
+            return;
+        }
+    }
+    QUrl queue;
+    queue.setUrl(baseUrl.toString().append(QString("las/REST/1.0/queue/").append(QString::number(qId))));
+    Fetch(queue);
 }
 
 QString network::getValue(QString valueName, QString &source){

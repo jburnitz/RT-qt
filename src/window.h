@@ -70,6 +70,7 @@ public slots:
     void GetCredentials();
     void slotAcceptUserLogin(QString& user,QString& pass);
     void LoginComplete();
+    void slotShowError(QString err, QString details);
 
 };
 

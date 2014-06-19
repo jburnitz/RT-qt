@@ -4,6 +4,7 @@
 #include "logindialog.h"
 
 #include <QTextBrowser>
+#include <QMessageBox>
 #include <QLabel>
 #include <QtNetwork>
 
@@ -34,10 +35,16 @@ Window::Window(){
     connection = new network(this);
     connect(connection, SIGNAL(CredentialsRequested()), this, SLOT(GetCredentials()));
     connect(connection, SIGNAL(LoggedIn()), this, SLOT(LoginComplete()));
+    connect(connection, SIGNAL(Error(QString,QString)), this, SLOT(slotShowError(QString,QString)));
 
     connection->Begin();
-
-    //connect( centralWidget, SIGNAL(anchorClicked(QUrl)) )
+}
+void Window::slotShowError(QString err,QString details){
+    QMessageBox eBox(this);
+    eBox.setWindowTitle("Error!");
+    eBox.setText(err);
+    eBox.setDetailedText(details);
+    eBox.exec();
 }
 
 void Window::GetCredentials(){
@@ -51,8 +58,7 @@ void Window::slotAcceptUserLogin(QString &user, QString &pass){
 
 void Window::LoginComplete(){
     qDebug()<<"Window::LoginComplete";
-    //centralWidget->setHtml(connection->doc);
-    //connection->Fetch("https://helpdesk.uic.edu/las/REST/1.0/search/ticket?query=Status%20%3D%20%27open%27%20OR%20Status%20=%20%27new%27");
+    connection->Load();
 }
 
 QLabel *Window::createLabel(const QString &text){
