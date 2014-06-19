@@ -69,7 +69,7 @@ private:
 public slots:
     void GetCredentials();
     void slotAcceptUserLogin(QString& user,QString& pass);
-    void HandleData();
+    void LoginComplete();
 
 };
 

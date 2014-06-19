@@ -33,10 +33,11 @@ Window::Window(){
 
     connection = new network(this);
     connect(connection, SIGNAL(CredentialsRequested()), this, SLOT(GetCredentials()));
-    connect(connection, SIGNAL(LoggedIn()), this, SLOT(HandleData()));
+    connect(connection, SIGNAL(LoggedIn()), this, SLOT(LoginComplete()));
 
     connection->Begin();
 
+    //connect( centralWidget, SIGNAL(anchorClicked(QUrl)) )
 }
 
 void Window::GetCredentials(){
@@ -48,10 +49,10 @@ void Window::slotAcceptUserLogin(QString &user, QString &pass){
     connection->SetCredentials(user, pass);
 }
 
-void Window::HandleData(){
-    qDebug()<<"Window::HandleData";
+void Window::LoginComplete(){
+    qDebug()<<"Window::LoginComplete";
     //centralWidget->setHtml(connection->doc);
-    connection->Fetch("https://helpdesk.uic.edu/las/REST/1.0/ticket/6054/show");
+    //connection->Fetch("https://helpdesk.uic.edu/las/REST/1.0/search/ticket?query=Status%20%3D%20%27open%27%20OR%20Status%20=%20%27new%27");
 }
 
 QLabel *Window::createLabel(const QString &text){

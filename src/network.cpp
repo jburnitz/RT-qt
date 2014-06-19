@@ -68,8 +68,8 @@ void network::ProcessData(QByteArray data){
         conn->Clear();
         conn->Get(QUrl(getDataBetween("<a href=\"","\">here", doc)));
     }else{
-        //qDebug() << doc;
         qDebug()<<"emit(LoggedIn())";
+        //essentially makes this the last time this function gets hit
         disconnect(conn, SIGNAL(httpDone(QByteArray)), this, SLOT(ProcessData(QByteArray)));
         connect(conn, SIGNAL(httpDone(QByteArray)), this, SLOT(ProcessREST(QByteArray)));
         emit(LoggedIn());
@@ -78,8 +78,15 @@ void network::ProcessData(QByteArray data){
 }
 void network::ProcessREST(QByteArray data){
     qDebug()<< "network::ProcessREST()";// << data;
-    ticket tick;
-    tick.Fill( QString(data));
+    doc = QString(data);
+}
+
+void network::Load(){
+    queues = GetQueues();
+}
+
+ticket* network::GetQueues(){
+
 }
 
 QString network::getValue(QString valueName, QString &source){
