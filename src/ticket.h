@@ -2,6 +2,7 @@
 #define TICKET_H
 
 #include <QObject>
+#include <QMap>
 
 class ticket : public QObject
 {
@@ -9,10 +10,14 @@ class ticket : public QObject
 public:
     explicit ticket(QObject *parent = 0);
     ticket(QString &restData);
+    void Fill(QString &restData);
 
 signals:
 
 public slots:
+
+protected:
+    QMap<QString, QString> map;
 
 };
 

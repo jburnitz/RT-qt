@@ -1,10 +1,8 @@
 #include "network.h"
 #include "http.h"
+#include "ticket.h"
 
 #include <QUrlQuery>
-
-#include <QDomDocument>
-#include <QXmlInputSource>
 
 network::network(QObject *parent)
 {
@@ -79,8 +77,9 @@ void network::ProcessData(QByteArray data){
 
 }
 void network::ProcessREST(QByteArray data){
-    qDebug()<< "network::ProcessREST()" << data;
-
+    qDebug()<< "network::ProcessREST()";// << data;
+    ticket tick;
+    tick.Fill( QString(data));
 }
 
 QString network::getValue(QString valueName, QString &source){

@@ -1,16 +1,18 @@
-QT += network widgets xml
+QT += network widgets core
 
 HEADERS     = borderlayout.h \
               window.h \
     network.h \
     http.h \
-    logindialog.h
+    logindialog.h \
+    ticket.h
 SOURCES     = borderlayout.cpp \
               main.cpp \
               window.cpp \
     network.cpp \
     http.cpp \
-    logindialog.cpp
+    logindialog.cpp \
+    ticket.cpp
 
 INSTALLS += target
 
