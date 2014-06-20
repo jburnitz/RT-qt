@@ -23,12 +23,12 @@ public:
     void Load();
     QString doc;
     QUrl baseUrl;
+    QMap<QString, QString> queues;
 
 public slots:
     void ProcessData(QByteArray data);
     void ProcessREST(QByteArray data);
     void FindQueues(QByteArray data);
-    void ShowQueues();
 
 protected:
     Http *conn;
@@ -36,8 +36,6 @@ protected:
     QString getValue(QString valueName, QString &source);
     QString getDataBetween(QString begin,QString end, QString &source);
     void Login();
-
-    QMap<QString, QString> queues;
     int qId;
 
 signals:

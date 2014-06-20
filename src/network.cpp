@@ -8,7 +8,7 @@
 network::network(QObject *parent)
 {
     this->setParent(parent);
-    qId=10;
+    qId=1;
     baseUrl.setUrl("https://helpdesk.uic.edu/");
 
     conn = new Http();

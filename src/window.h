@@ -48,6 +48,10 @@ class QLabel;
 class QTextBrowser;
 class network;
 class LoginDialog;
+class QTreeView;
+class QListWidget;
+class QCheckBox;
+
 QT_END_NAMESPACE
 
 class Window : public QWidget
@@ -57,20 +61,27 @@ class Window : public QWidget
 public:
     Window();
 
-private:
+protected:
     QLabel *createLabel(const QString &text);
     QLabel *status;
     QLabel *header;
     QTextBrowser *centralWidget;
     LoginDialog* loginDialog;
 
+    QTreeView *tree;
+    QListWidget *queuesToWatch;
+    //QList<QCheckBox*> *queueCheckBoxes;
+
     network *connection;
+    bool isQueuesEnabledSetup;
+    void SetupQueueSettings();
 
 public slots:
     void GetCredentials();
     void slotAcceptUserLogin(QString& user,QString& pass);
     void LoginComplete();
     void slotShowError(QString err, QString details);
+    void slotUpdate();
 
 };
 
