@@ -9,6 +9,7 @@
 #include <QtNetwork>
 #include <QListWidget>
 #include <QCheckBox>
+#include <QTreeWidget>
 
 Window::Window(){
     QString helpdesk("https://helpdesk.uic.edu/las/");
@@ -22,6 +23,9 @@ Window::Window(){
 
     //modifying how the table of settings looks
     queuesToWatch = new QListWidget();
+    tree = new QTreeWidget(this);
+    tree->setHeaderLabel("Queues");
+    tree->setColumnCount(1);
     /*
     queuesToWatch->setHorizontalHeaderLabels(QStringList()<<"Queues"<<"Enabled");
     queuesToWatch->setShowGrid(false);
@@ -40,7 +44,7 @@ Window::Window(){
     header = createLabel("Ticket Number # ");
     status = createLabel(helpdesk);
 
-    layout->addWidget(queuesToWatch, BorderLayout::Center);
+    layout->addWidget(tree, BorderLayout::Center);
     layout->addWidget(header, BorderLayout::North);
     layout->addWidget(status, BorderLayout::South);
 
@@ -55,6 +59,7 @@ Window::Window(){
     connect(connection, SIGNAL(LoggedIn()), this, SLOT(LoginComplete()));
     connect(connection, SIGNAL(Error(QString,QString)), this, SLOT(slotShowError(QString,QString)));
     connect(connection, SIGNAL(Done()), this, SLOT(slotUpdate()));
+    //connect(queuesToWatch, SIGNAL())
 
     connection->Begin();
 }
@@ -63,13 +68,16 @@ void Window::slotShowError(QString err,QString details){
     eBox.setWindowTitle("Error!");
     eBox.setText(err);
     eBox.setDetailedText(details);
+    status->setText("An Error has occurred");
     eBox.exec();
 }
 void Window::slotUpdate(){
     //refresh ui elements
     if(!isQueuesEnabledSetup){
+        status->setText("Refreshing Queues");
         SetupQueueSettings();
     }
+    status->setText("Ready.");
 }
 
 void Window::GetCredentials(){
@@ -79,22 +87,24 @@ void Window::GetCredentials(){
 
 void Window::slotAcceptUserLogin(QString &user, QString &pass){
     connection->SetCredentials(user, pass);
+    status->setText("Logging in...");
 }
 
 void Window::LoginComplete(){
     qDebug()<<"Window::LoginComplete";
+    status->setText("Logged in!");
     connection->Load();
 }
 
 void Window::SetupQueueSettings(){
     QList<QString> queueIds = connection->queues.keys();
+    QList<QTreeWidgetItem*> items;
+
     foreach(QString str, queueIds){
-        //queueCheckBoxes->append(new QCheckBox(str,queueCheckBoxes));
-        QListWidgetItem* item = new QListWidgetItem(connection->queues.value(str), queuesToWatch);
-        item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
-        item->setCheckState(Qt::Checked);
-        queuesToWatch->addItem(item);
+        items.append(new QTreeWidgetItem((QTreeWidget*)0, QStringList(connection->queues.value(str))));
     }
+    tree->insertTopLevelItems(0, items);
+
     isQueuesEnabledSetup = true;
 }
 

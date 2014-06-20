@@ -48,7 +48,7 @@ class QLabel;
 class QTextBrowser;
 class network;
 class LoginDialog;
-class QTreeView;
+class QTreeWidget;
 class QListWidget;
 class QCheckBox;
 
@@ -68,7 +68,7 @@ protected:
     QTextBrowser *centralWidget;
     LoginDialog* loginDialog;
 
-    QTreeView *tree;
+    QTreeWidget *tree;
     QListWidget *queuesToWatch;
     //QList<QCheckBox*> *queueCheckBoxes;
 
