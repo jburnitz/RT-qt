@@ -24,8 +24,11 @@ Window::Window(){
     //modifying how the table of settings looks
     queuesToWatch = new QListWidget();
     tree = new QTreeWidget(this);
-    tree->setHeaderLabel("Queues");
-    tree->setColumnCount(1);
+    tree->setColumnCount(2);
+    QList<QString> headers;
+    headers.append("Ticket Number");
+    headers.append("Subject");
+    tree->setHeaderLabels(QStringList(headers));
     /*
     queuesToWatch->setHorizontalHeaderLabels(QStringList()<<"Queues"<<"Enabled");
     queuesToWatch->setShowGrid(false);
@@ -59,7 +62,7 @@ Window::Window(){
     connect(connection, SIGNAL(LoggedIn()), this, SLOT(LoginComplete()));
     connect(connection, SIGNAL(Error(QString,QString)), this, SLOT(slotShowError(QString,QString)));
     connect(connection, SIGNAL(Done()), this, SLOT(slotUpdate()));
-    //connect(queuesToWatch, SIGNAL())
+    connect(tree, SIGNAL(itemActivated(QTreeWidgetItem*,int)), this, SLOT(RefreshQueue(QTreeWidgetItem*,int)));
 
     connection->Begin();
 }
@@ -74,7 +77,6 @@ void Window::slotShowError(QString err,QString details){
 void Window::slotUpdate(){
     //refresh ui elements
     if(!isQueuesEnabledSetup){
-        status->setText("Refreshing Queues");
         SetupQueueSettings();
     }
     status->setText("Ready.");
@@ -92,7 +94,7 @@ void Window::slotAcceptUserLogin(QString &user, QString &pass){
 
 void Window::LoginComplete(){
     qDebug()<<"Window::LoginComplete";
-    status->setText("Logged in!");
+    status->setText("Refreshing Queues");
     connection->Load();
 }
 
@@ -103,9 +105,25 @@ void Window::SetupQueueSettings(){
     foreach(QString str, queueIds){
         items.append(new QTreeWidgetItem((QTreeWidget*)0, QStringList(connection->queues.value(str))));
     }
+    //items.back()->addChild(new QTreeWidgetItem((QTreeWidget*)0, QStringList("test")));
     tree->insertTopLevelItems(0, items);
 
     isQueuesEnabledSetup = true;
+}
+void Window::RefreshQueue(QTreeWidgetItem *item, int column){
+    qDebug()<<item->text(0);
+    connection->tickets.clear();
+    status->setText(QString("Fetching tickets for ").append(item->text(0)));
+    tempItem = item;
+    connect(connection, SIGNAL(Done()), this, SLOT(AddTickets()));
+    connection->GetTickets(item->text(0));
+}
+void Window::AddTickets(){
+    disconnect(connection, SIGNAL(Done()), this, SLOT(AddTickets()));
+    foreach(QStringList strList, connection->tickets){
+        tempItem->addChild(new QTreeWidgetItem(strList));
+    }
+    status->setText("Ready.");
 }
 
 QLabel *Window::createLabel(const QString &text){

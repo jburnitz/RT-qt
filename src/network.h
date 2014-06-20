@@ -24,11 +24,14 @@ public:
     QString doc;
     QUrl baseUrl;
     QMap<QString, QString> queues;
+    QList<QStringList> tickets;
+    void GetTickets(QString queueName);
 
 public slots:
     void ProcessData(QByteArray data);
     void ProcessREST(QByteArray data);
     void FindQueues(QByteArray data);
+    void ProcessTickets(QByteArray data);
 
 protected:
     Http *conn;

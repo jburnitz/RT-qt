@@ -51,6 +51,7 @@ class LoginDialog;
 class QTreeWidget;
 class QListWidget;
 class QCheckBox;
+class QTreeWidgetItem;
 
 QT_END_NAMESPACE
 
@@ -75,6 +76,7 @@ protected:
     network *connection;
     bool isQueuesEnabledSetup;
     void SetupQueueSettings();
+    QTreeWidgetItem *tempItem;
 
 public slots:
     void GetCredentials();
@@ -82,6 +84,8 @@ public slots:
     void LoginComplete();
     void slotShowError(QString err, QString details);
     void slotUpdate();
+    void RefreshQueue(QTreeWidgetItem* item,int column);
+    void AddTickets();
 
 };
 

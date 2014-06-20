@@ -4,6 +4,7 @@
 
 #include <QUrlQuery>
 #include <QNetworkReply>
+#include <QStringList>
 
 network::network(QObject *parent)
 {
@@ -96,6 +97,50 @@ void network::Load(){
     connect(conn, SIGNAL(httpDone(QByteArray)), this, SLOT(FindQueues(QByteArray)));
     FindQueues(NULL);
 }
+void network::GetTickets(QString queueName){
+   disconnect(conn,SIGNAL(httpDone(QByteArray)),this, SLOT(ProcessREST(QByteArray)));
+   connect(conn, SIGNAL(httpDone(QByteArray)), this, SLOT(ProcessTickets(QByteArray)));
+   QUrl query;
+   query.setUrl(baseUrl.toString().append(QString("las/REST/1.0/search/ticket?query=Queue='").append(queueName).append("' AND (Status %3D 'new' OR Status %3D 'open' OR Status %3D 'stalled')")  ));
+   Fetch(query);
+}
+
+void network::ProcessTickets(QByteArray data){
+    qDebug()<<data;
+    QString reply(data);
+
+    //make sure we have data
+    if(reply.size()>0){
+        QStringList lines = reply.split(QRegExp("\n\|\r\n\|\r"),QString::SkipEmptyParts);
+        if(lines.at(0).contains("200 Ok")){
+            if(lines.at(1).contains("No matching results.")){
+                emit(Done());
+                disconnect(conn,SIGNAL(httpDone(QByteArray)),this,SLOT(ProcessTickets(QByteArray)));
+                return;
+            }
+
+            QString str;
+            int loc;
+            for(int i=1; i<lines.size(); i++){
+                str = lines.at(i);
+                loc = str.indexOf(':');
+                if( str.contains(':') ){
+                    QStringList strLst;
+                    strLst.append(str.left(loc));
+                    strLst.append(str.mid(loc+1).trimmed());
+                    tickets.append( strLst );
+                }
+            }
+            emit(Done());
+            disconnect(conn,SIGNAL(httpDone(QByteArray)),this,SLOT(ProcessTickets(QByteArray)));
+        }else{
+            qWarning() << "REST error:" << reply;
+            emit(Error("Error Getting Tickets",conn->reply->errorString()));
+            disconnect(conn,SIGNAL(httpDone(QByteArray)),this,SLOT(ProcessTickets(QByteArray)));
+            return;
+        }
+    }
+}
 
 void network::FindQueues(QByteArray data){
     qDebug()<<"network::FindQueues(QByteArray data)";
@@ -109,6 +154,8 @@ void network::FindQueues(QByteArray data){
             qDebug() << "network::FindQueues()" << lines.at(0);
             if(lines.at(1).contains("does not exist")){
                 emit(Done());
+                disconnect(conn,SIGNAL(httpDone(QByteArray)),this,SLOT(FindQueues(QByteArray)));
+                disconnect(conn,SIGNAL(httpDone(QByteArray)),this,SLOT(ProcessREST(QByteArray)));
                 return;
             }
 
@@ -128,6 +175,8 @@ void network::FindQueues(QByteArray data){
         }else{
             qWarning() << "REST error:" << reply;
             emit(Error("Error Finding Queues",conn->reply->errorString()));
+            disconnect(conn,SIGNAL(httpDone(QByteArray)),this,SLOT(FindQueues(QByteArray)));
+            disconnect(conn,SIGNAL(httpDone(QByteArray)),this,SLOT(ProcessREST(QByteArray)));
             return;
         }
     }
