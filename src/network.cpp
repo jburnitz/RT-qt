@@ -101,7 +101,7 @@ void network::GetTickets(QString queueName){
    disconnect(conn,SIGNAL(httpDone(QByteArray)),this, SLOT(ProcessREST(QByteArray)));
    connect(conn, SIGNAL(httpDone(QByteArray)), this, SLOT(ProcessTickets(QByteArray)));
    QUrl query;
-   query.setUrl(baseUrl.toString().append(QString("las/REST/1.0/search/ticket?query=Queue='").append(queueName).append("' AND (Status %3D 'new' OR Status %3D 'open' OR Status %3D 'stalled')")  ));
+   query.setUrl(baseUrl.toString().append(QString("las/REST/1.0/search/ticket?query=Queue='").append(queueName).append("' AND (Status %3D 'new' OR Status %3D 'open' OR Status %3D 'stalled'&orderby=+Created&format=i)")  ));
    Fetch(query);
 }
 

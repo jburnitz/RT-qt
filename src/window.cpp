@@ -44,11 +44,11 @@ Window::Window(){
     loginDialog = new LoginDialog( this );
     connection = new network(this);
 
-    header = createLabel("Ticket Number # ");
+    //header = createLabel("Ticket Number # ");
     status = createLabel(helpdesk);
 
     layout->addWidget(tree, BorderLayout::Center);
-    layout->addWidget(header, BorderLayout::North);
+    //layout->addWidget(header, BorderLayout::North);
     layout->addWidget(status, BorderLayout::South);
 
     setLayout(layout);
@@ -56,6 +56,7 @@ Window::Window(){
 
     QString user1("jburni2");
     loginDialog->setUsername( user1 );
+    //loginDialog->setUsernamesList();
 
     connect(loginDialog,SIGNAL(acceptLogin(QString&,QString&,int&)), this, SLOT(slotAcceptUserLogin(QString&,QString&)));
     connect(connection, SIGNAL(CredentialsRequested()), this, SLOT(GetCredentials()));
@@ -120,8 +121,13 @@ void Window::RefreshQueue(QTreeWidgetItem *item, int column){
 }
 void Window::AddTickets(){
     disconnect(connection, SIGNAL(Done()), this, SLOT(AddTickets()));
+    //I dont want duplicates, I can do this smarter probably too...
+    qDeleteAll(tempItem->takeChildren());
     foreach(QStringList strList, connection->tickets){
         tempItem->addChild(new QTreeWidgetItem(strList));
+    }
+    if(!tempItem->isExpanded()){
+        tempItem->setExpanded(true);
     }
     status->setText("Ready.");
 }
