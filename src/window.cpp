@@ -63,7 +63,7 @@ Window::Window(){
     connect(connection, SIGNAL(LoggedIn()), this, SLOT(LoginComplete()));
     connect(connection, SIGNAL(Error(QString,QString)), this, SLOT(slotShowError(QString,QString)));
     connect(connection, SIGNAL(Done()), this, SLOT(slotUpdate()));
-    connect(tree, SIGNAL(itemActivated(QTreeWidgetItem*,int)), this, SLOT(RefreshQueue(QTreeWidgetItem*,int)));
+    connect(tree, SIGNAL(itemActivated(QTreeWidgetItem*,int)), this, SLOT(QueryItem(QTreeWidgetItem*,int)));
 
     connection->Begin();
 }
@@ -111,16 +111,25 @@ void Window::SetupQueueSettings(){
 
     isQueuesEnabledSetup = true;
 }
-void Window::RefreshQueue(QTreeWidgetItem *item, int column){
-    qDebug()<<item->text(0);
+void Window::QueryItem(QTreeWidgetItem *item, int column){
+    qDebug()<< "Window::QueryItem(QTreeWidgetItem *item, int column)";
     connection->tickets.clear();
-    status->setText(QString("Fetching tickets for ").append(item->text(0)));
     tempItem = item;
-    connect(connection, SIGNAL(Done()), this, SLOT(AddTickets()));
+    connect(connection, SIGNAL(Done()), this, SLOT(AddChildren()));
+
+    if(item->text(0).toInt()){
+        qDebug()<<"Ticket Number:"<<item->text(0);
+        status->setText(QString("Fetching ticket #").append(item->text(0)));
+    }
+    else{
+        qDebug()<<"Queue:"<<item->text(0);
+        status->setText(QString("Fetching tickets for ").append(item->text(0)));
+    }
+
     connection->GetTickets(item->text(0));
 }
-void Window::AddTickets(){
-    disconnect(connection, SIGNAL(Done()), this, SLOT(AddTickets()));
+void Window::AddChildren(){
+    disconnect(connection, SIGNAL(Done()), this, SLOT(AddChildren()));
     //I dont want duplicates, I can do this smarter probably too...
     qDeleteAll(tempItem->takeChildren());
     foreach(QStringList strList, connection->tickets){

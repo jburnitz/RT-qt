@@ -99,9 +99,20 @@ void network::Load(){
 }
 void network::GetTickets(QString queueName){
    disconnect(conn,SIGNAL(httpDone(QByteArray)),this, SLOT(ProcessREST(QByteArray)));
+   QString query;
+   query = baseUrl.toString();
+   query.append("las/REST/1.0/");
+
+   //means its a ticket that has a int number
+   if(queueName.toInt()){
+       query.append("ticket/").append(queueName);
+   }
+   //means we want to find tickets for the queue
+   else{
+       query.append("search/ticket?query=Queue='").append(queueName).append("' AND (Status %3D 'new' OR Status %3D 'open' OR Status %3D 'stalled')");
+   }
+
    connect(conn, SIGNAL(httpDone(QByteArray)), this, SLOT(ProcessTickets(QByteArray)));
-   QUrl query;
-   query.setUrl(baseUrl.toString().append(QString("las/REST/1.0/search/ticket?query=Queue='").append(queueName).append("' AND (Status %3D 'new' OR Status %3D 'open' OR Status %3D 'stalled'&orderby=+Created&format=i)")  ));
    Fetch(query);
 }
 
@@ -120,15 +131,19 @@ void network::ProcessTickets(QByteArray data){
             }
 
             QString str;
+            QString rightSide;
             int loc;
             for(int i=1; i<lines.size(); i++){
                 str = lines.at(i);
                 loc = str.indexOf(':');
                 if( str.contains(':') ){
-                    QStringList strLst;
-                    strLst.append(str.left(loc));
-                    strLst.append(str.mid(loc+1).trimmed());
-                    tickets.append( strLst );
+                    rightSide = str.mid(loc+1).trimmed();
+                    if( !rightSide.compare("Not set") || !rightSide.compare("0")){
+                        QStringList strLst;
+                        strLst.append(str.left(loc));
+                        strLst.append(str.mid(loc+1).trimmed());
+                        tickets.append( strLst );
+                    }
                 }
             }
             emit(Done());

@@ -84,9 +84,8 @@ public slots:
     void LoginComplete();
     void slotShowError(QString err, QString details);
     void slotUpdate();
-    void RefreshQueue(QTreeWidgetItem* item,int column);
-    void AddTickets();
-
+    void QueryItem(QTreeWidgetItem* item,int column);
+    void AddChildren();
 };
 
 #endif // WINDOW_H
