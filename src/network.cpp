@@ -132,17 +132,20 @@ void network::ProcessTickets(QByteArray data){
 
             QString str;
             QString rightSide;
+            QString leftSide;
             int loc;
             for(int i=1; i<lines.size(); i++){
                 str = lines.at(i);
-                loc = str.indexOf(':');
-                if( str.contains(':') ){
+                if( (loc=str.indexOf(':')) > -1 ){
+                    leftSide = str.left(loc);
                     rightSide = str.mid(loc+1).trimmed();
-                    if( !rightSide.compare("Not set") || !rightSide.compare("0")){
-                        QStringList strLst;
-                        strLst.append(str.left(loc));
-                        strLst.append(str.mid(loc+1).trimmed());
-                        tickets.append( strLst );
+                    if( !(rightSide.compare("0")==0) ){
+                        if(!(rightSide.compare("Not set")==0)){
+                            QStringList strLst;
+                            strLst.append( leftSide );
+                            strLst.append( rightSide );
+                            tickets.append( strLst );
+                        }
                     }
                 }
             }
